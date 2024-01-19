@@ -1,0 +1,121 @@
+/*
+
+primera llamada funcional
+https://power.larc.nasa.gov/api/temporal/hourly/point?start=20210101&end=20210331&latitude=40.8742&longitude=-110.3606&community=ag&parameters=T2M&header=true&time-standard=lst
+
+Pagina de las calls 
+https://power.larc.nasa.gov/api/pages/?urls.primaryName=Hourly
+
+Parametros de la llamada
+https://power.larc.nasa.gov/#resources
+
+Api General
+https://power.larc.nasa.gov/docs/services/api/
+
+*/
+
+
+GEOJSON = .json
+CSV = .csv
+ASCII =.txt
+
+
+
+import { useEffect, useState } from 'react';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export default function Home() {
+  const [downloadLink, setDownloadLink] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          'https://power.larc.nasa.gov/api/temporal/daily/point?start=20230101&end=20240101&latitude=40.8742&longitude=-110.3606&community=ag&parameters=T2M&format=netcdf&header=true&time-standard=lst'
+        );
+
+        if (response.ok) {
+          const buffer = await response.arrayBuffer();
+
+          // Crear un enlace de descarga
+          const blob = new Blob([buffer], { type: 'application/octet-stream' });
+          const url = URL.createObjectURL(blob);
+
+          setDownloadLink(url);
+        } else {
+          console.error('Error al obtener los datos');
+        }
+      } catch (error) {
+        console.error('Error en la solicitud:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <div>
+      <h1>xd</h1>
+
+      {downloadLink && (
+        <div>
+          {/* Agrega un enlace para descargar el archivo */}
+          <a href={downloadLink} download="archivo.nc">
+            Descargar archivo .nc
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+
+
+
+Name: Temperature at 10 Meters
+Abbreviation: T10M
+
+
+Name: Temperature at 2 Meters
+Abbreviation: T2M
+
+
+Name: Dew/Frost Point at 2 Meters
+Abbreviation: T2MDEW
+
+Name: Wet Bulb Temperature at 2 Meters
+Abbreviation: T2MWET
+
+Name: Earth Skin Temperature
+Abbreviation: TS
+
+Name: Temperature at 2 Meters Range
+Abbreviation: T2M_RANGE
+
+Name: Temperature at 10 Meters Maximum
+Abbreviation: T10M_MAX
+
+
+Name: Temperature at 10 Meters Minimum
+Abbreviation: T10M_MIN
+
+TEMPERATURA
+las que funcaron:
+T2MDEW
+T2M
+TS
+T2MWET
+
+
+
+precipitacion
+PRECTOTCORR,QV2M,RH2M
+
+
+wind/pressure
+PS,WD10M,WS10M,WS50M,WD50M
+
