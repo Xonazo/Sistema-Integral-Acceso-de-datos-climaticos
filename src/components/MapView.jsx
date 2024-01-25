@@ -66,7 +66,7 @@ const MapView = ({ onMapClick }) => {
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
-        mapRef.current = null;
+        mapRef.current = null; 
       }
     };
   }, []);
