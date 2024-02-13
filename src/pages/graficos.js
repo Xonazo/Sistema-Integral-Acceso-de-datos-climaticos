@@ -1,76 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NetCDFReader } from 'netcdfjs';
 import { Line } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
+import Swal from 'sweetalert2';
+
 export default function Graficos() {
-    const [file, setFile] = useState(null);
-    const [variables, setVariables] = useState([]);
-    const [selectedVariable, setSelectedVariable] = useState(null);
-    const [data, setData] = useState(null);
-    const [chartData, setChartData] = useState(null);
-    const [shouldRenderChart, setShouldRenderChart] = useState(false);
-    const [variableLongNames, setVariableLongNames] = useState({});
-    const [startTime, setStartTime] = useState();
+    const [file1, setFile1] = useState(null);
+    const [file2, setFile2] = useState(null);
+    const [variables1, setVariables1] = useState([]);
+    const [variables2, setVariables2] = useState([]);
+    const [selectedVariable1, setSelectedVariable1] = useState(null);
+    const [selectedVariable2, setSelectedVariable2] = useState(null);
+    const [data1, setData1] = useState(null);
+    const [data2, setData2] = useState(null);
+    const [chartData1, setChartData1] = useState(null);
+    const [chartData2, setChartData2] = useState(null);
+    const [shouldRenderChart1, setShouldRenderChart1] = useState(false);
+    const [shouldRenderChart2, setShouldRenderChart2] = useState(false);
+    const [variableLongNames1, setVariableLongNames1] = useState({});
+    const [variableLongNames2, setVariableLongNames2] = useState({});
+    const [startTime1, setStartTime1] = useState();
+    const [startTime2, setStartTime2] = useState();
 
 
+    useEffect(() => {
+        if (variables1.length > 0) {
+            setSelectedVariable1(variables1[0]);
+        }
+    }, [variables1]);
+
+    useEffect(() => {
+        if (variables2.length > 0) {
+            setSelectedVariable2(variables2[0]);
+        }
+    }, [variables2]);
 
 
-    const handleFileChange = (e) => {
+    const handleFileChange1 = (e) => {
         const selectedFile = e.target.files[0];
-        setFile(selectedFile);
-
-        // Parsear el archivo NetCDF cuando se seleccione un archivo
-        parseNetCDF(selectedFile);
+        if (selectedFile && selectedFile.name.endsWith('.nc')) {
+            setFile1(selectedFile);
+            parseNetCDF(selectedFile, setData1, setVariables1, setVariableLongNames1, setStartTime1);
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Este no es un archivo NetCDF'
+            });
+        }
     };
 
-    const parseNetCDF = (file) => {
+    const handleFileChange2 = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile && selectedFile.name.endsWith('.nc')) {
+            setFile2(selectedFile);
+            parseNetCDF(selectedFile, setData2, setVariables2, setVariableLongNames2, setStartTime2);
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Este no es un archivo NetCDF'
+            });
+        }
+    };
+
+    const parseNetCDF = (file, setData, setVariables, setVariableLongNames, setStartTime) => {
         const reader = new FileReader();
         reader.onload = () => {
             const arrayBuffer = reader.result;
             const data = new Uint8Array(arrayBuffer);
             const ncReader = new NetCDFReader(data);
 
-            // Almacenar los nombres de las variables disponibles
             const variableNames = ncReader.variables.map(variable => variable.name);
             setVariables(variableNames);
-
-            const timeVariable = ncReader.variables.find(variable => variable.name === 'time');
-
-            if (timeVariable) {
-                const startTimeAttribute = timeVariable.attributes.find(attr => attr.name === 'units');
-
-                if (startTimeAttribute) {
-                    const startTimeString = startTimeAttribute.value;
-                    const startTime = new Date(startTimeString.split('since ')[1]);
-                    setStartTime(startTime);
-                    console.log('Tiempo de inicio:', startTime);
-                } else {
-                    console.log('No se encontró el atributo units para la variable de tiempo');
-                }
-            } else {
-                console.log('No se encontró la variable de tiempo');
-            }
-
-
-
-
-
-
-
-
-
-
-            const titulos = ncReader.variables.map(variable => variable);
-            console.log(titulos)
-
-
 
 
             const longNames = {};
             ncReader.variables.forEach(variable => {
                 const longNameAttribute = variable.attributes.find(attr => attr.name === 'long_name');
                 if (longNameAttribute) {
-                    // Eliminar los guiones bajos de los nombres largos y almacenarlos
                     longNames[variable.name] = longNameAttribute.value.replace(/_/g, ' ');
                 } else {
                     longNames[variable.name] = variable.name;
@@ -78,26 +86,14 @@ export default function Graficos() {
             });
             setVariableLongNames(longNames);
 
-
-            // Seleccionar automáticamente la primera variable
-            if (variableNames.length > 0) {
-                setSelectedVariable(variableNames[0]);
-            }
-
-            // Almacena el objeto NetCDFReader en el estado
             setData(ncReader);
-
-
-
         };
         reader.readAsArrayBuffer(file);
     };
 
-    const generateChartData = () => {
+    const generateChartData = (data, selectedVariable, setChartData, setShouldRenderChart) => {
         if (data && selectedVariable) {
             const variableData = data.getDataVariable(selectedVariable);
-
-            // Filtrar los valores de -999
             const filteredData = variableData.filter(value => value !== -999);
 
             const labels = filteredData.map((value, index) => index);
@@ -106,7 +102,7 @@ export default function Graficos() {
                 labels: labels,
                 datasets: [
                     {
-                        label: variableLongNames[selectedVariable],
+                        label: selectedVariable,
                         data: values,
                         fill: false,
                         borderColor: 'rgb(75, 192, 192)',
@@ -119,40 +115,79 @@ export default function Graficos() {
         }
     };
 
-
-    // Generar el gráfico cuando se selecciona una variable
     React.useEffect(() => {
-        generateChartData();
-    }, [selectedVariable]);
+        generateChartData(data1, selectedVariable1, setChartData1, setShouldRenderChart1);
+    }, [selectedVariable1, data1]);
+
+    React.useEffect(() => {
+        generateChartData(data2, selectedVariable2, setChartData2, setShouldRenderChart2);
+    }, [selectedVariable2, data2]);
 
     return (
-        <div>
-            <input type="file" onChange={handleFileChange} />
-            {file && <p>Archivo seleccionado: {file.name}</p>}
-
-            {/* Mostrar las variables disponibles */}
-            <p>Variables disponibles:</p>
-            <select value={selectedVariable} onChange={(e) => setSelectedVariable(e.target.value)}>
-                {variables.map((variable, index) => (
-                    <option key={index} value={variable}>{variableLongNames[variable]}</option>
-                ))}
-            </select>
-
-            {/* Mostrar el gráfico si se debe renderizar */}
-            {shouldRenderChart && chartData && (
-                <div className='w-1/2'>
-                    <Line
-
-                        data={chartData}
-                        options={{
-                            scales: {
-                                x: { type: 'linear' },
-                                y: { type: 'linear' }
-                            }
-                        }}
-                    />
+        <div className="grid grid-cols-2 gap-8 justify-center bg-blue-100 ">
+            <div className="m-4 ">
+                <div className='flex flex-col items-center '>
+                    <input type="file" onChange={handleFileChange1} className="mb-2" />
+                    {file1 && <p className="mb-2 text-sm">Archivo seleccionado: {file1.name}</p>}
+                    <p className="mb-2">Variables disponibles:</p>
+                    <select value={selectedVariable1} onChange={(e) => setSelectedVariable1(e.target.value)} className="mb-4">
+                        <option disabled hidden className="">Selecciona Variable</option>
+                        {variables1
+                            .filter(variable => !['time', 'lat', 'lon'].includes(variable))
+                            .map((variable, index) => (
+                                <option key={index} value={variable}>{variableLongNames1[variable]}</option>
+                            ))}
+                    </select>
                 </div>
-            )}
+                {shouldRenderChart1 && chartData1 && (
+                    <div className="w-full bg-white">
+                        <Line
+                            data={chartData1}
+                            options={{
+                                maintainAspectRatio: true,
+                                scales: {
+                                    x: { type: 'linear' },
+                                    y: { type: 'linear' }
+                                }
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+            <div className="m-4">
+                <div className='flex flex-col items-center'>
+                    <input type="file" onChange={handleFileChange2} className="mb-2" />
+                    {file2 && <p className="mb-2 text-sm ">Archivo seleccionado: {file2.name}</p>}
+                    <p className="mb-2 ">Variables disponibles:</p>
+                    <select value={selectedVariable2} onChange={(e) => setSelectedVariable2(e.target.value)} className="mb-4">
+                        <option value="" disabled hidden>Selecciona Variable </option>
+                        {variables2
+                            .filter(variable => !['time', 'lat', 'lon'].includes(variable))
+                            .map((variable, index) => (
+                                <option key={index} value={variable}>{variableLongNames2[variable]}</option>
+                            ))}
+                    </select>
+                </div>
+                {shouldRenderChart2 && chartData2 && (
+                    <div className="w-full bg-white">
+                        <Line
+                            data={chartData2}
+                            options={{
+                                maintainAspectRatio: true,
+                                scales: {
+                                    x: { type: 'linear' },
+                                    y: { type: 'linear' }
+                                }
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
+
+
+
+
+
 }
