@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import MapView from '@/components/MapView';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
-import Tabs from '@/components/Tabs';
 import Swal from 'sweetalert2';
 
 
@@ -15,6 +14,9 @@ export default function Home() {
   const [comunidad, setComunidad] = useState('');
   const [formato, setFormato] = useState('');
   const [intervalo, setIntervalo] = useState('');
+  
+
+
 
 
   const handleFormSubmit = (event) => {
@@ -160,13 +162,13 @@ export default function Home() {
           {/* Seccion de pestañas */}
           <div className='flex'>
             <button
-              className='flex-1 px-4 py-4 bg-gray-300 hover:bg-gray-500 rounded'
+              className=' flex-1 bg-gray-100 inline-block border-l border-t border-r rounded-t py-2 px-4 text-blue-dark font-semibold hover:bg-gray-200'
               onClick={() => handleTabClick('tab1')}
             >
               Single Point
             </button>
             <button
-              className='flex-1 px-4 py-4 bg-gray-300 hover:bg-gray-500 rounded'
+              className='flex-1 bg-gray-100 inline-block border-l border-t border-r rounded-t py-2 px-4 text-blue-dark font-semibold hover:bg-gray-200'
               onClick={() => handleTabClick('tab2')}
             >
               Zone
@@ -176,7 +178,11 @@ export default function Home() {
           <div className=' flex items-center p-4 '>
             {// Formulario 1
               activeTab === 'tab1' ? (
+
                 <form onSubmit={handleFormSubmit}>
+                  <div>
+                    <h1 className="text-center text-2xl font-bold py-5">Single Point</h1>
+                  </div>
                   <div className="flex mb-4 gap-x-2" >
                     <label className='text-nowrap w-56 text-end'>Fecha de inicio</label>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="rounded-lg text-center w-full font-light" />
@@ -258,6 +264,9 @@ export default function Home() {
               ) : (
                 // Formulario Tab 2 
                 <form onSubmit={handleFormSubmit}>
+                  <div>
+                    <h1 className="text-center text-2xl font-bold py-5">Zone</h1>
+                  </div>
                   <div className="flex mb-4 gap-x-2">
                     <label className='text-nowrap w-56 text-end'>Fecha de inicio</label>
                     <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="rounded-lg text-center w-full font-light" />
@@ -292,6 +301,7 @@ export default function Home() {
                     <input placeholder='Ingresa longitud' type="text" value={longitude} onChange={(e) => setLongitude(e.target.value)}
                       className="rounded-lg text-center w-full font-thin" />
                   </div>
+              
 
                   <div className="flex mb-4 gap-x-2">
                     <label className="text-nowrap w-56 text-end">Comunidad</label>
@@ -312,6 +322,7 @@ export default function Home() {
                       <option value="" disabled selected hidden>Selecciona intervalo </option>
                       <option value="hourly">Por Hora</option>
                       <option value="daily">Diario</option>
+
                     </select>
                   </div>
 
@@ -345,6 +356,9 @@ export default function Home() {
                   </button>
                 </form>
               )}
+          </div>
+          <div class="flex justify-center items-center " >
+          <a href="/graficos" class="text-blue-500 underline"> Graficar</a>
           </div>
         </div>
 
