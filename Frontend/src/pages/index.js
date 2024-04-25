@@ -156,40 +156,182 @@ export default function Home() {
 
 
 
-  const [latitudInferiorIzquierda, setLatitudInferiorIzquierda] = useState(null);
-  const [longitudInferiorIzquierda, setLongitudInferiorIzquierda] = useState(null);
-  const [latitudSuperiorDerecha, setLatitudSuperiorDerecha] = useState(null);
-  const [longitudSuperiorDerecha, setLongitudSuperiorDerecha] = useState(null);
+  const [latitudInferiorIzquierda, setLatitudInferiorIzquierda] = useState('');
+  const [longitudInferiorIzquierda, setLongitudInferiorIzquierda] = useState('');
+  const [latitudSuperiorDerecha, setLatitudSuperiorDerecha] = useState('');
+  const [longitudSuperiorDerecha, setLongitudSuperiorDerecha] = useState('');
 
-  
+
 
   const cords = (lat1, lat2, lng1, lng2) => {
     setLatitudInferiorIzquierda(lat1);
     setLongitudInferiorIzquierda(lng1);
     setLatitudSuperiorDerecha(lat2);
     setLongitudSuperiorDerecha(lng2);
-    
+
+    // console.log(lat1, "latitud inferior izquierda")
+    // console.log(lng1, "longitud inferior izquierda")
+    // console.log(lat2, "latitud superior derecha")
+    // console.log(lng2, "longitud superior derecha")
+
   };
 
 
+  const [formDataZone, setFormDataZone] = useState({
+    fechaInicio: '',
+    fechaFin: '',
+    comunidad: '',
+    intervalo: '',
+    parametros: '',
+    formato: ''
+  });
 
+  const handleFormSubmitZone = async (event) => {
+    event.preventDefault();
+    console.log(formDataZone);
+
+    const fechaInicioFormateada2 = formatearFecha(new Date(formDataZone.fechaInicio));
+    const fechaFinFormateada2 = formatearFecha(new Date(formDataZone.fechaFin));
+    console.log(fechaInicioFormateada2, "fecha inicio formateada2")
+    console.log(fechaFinFormateada2, "fecha fin formateada2")
+
+    const loadingAlert = Swal.fire({
+      title: 'Cargando...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+
+      onBeforeOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    console.log(formDataZone)
+
+    try {
+      const response = await axios.get(`https://power.larc.nasa.gov/api/temporal/${formDataZone.intervalo}/regional?start=${fechaInicioFormateada2}&end=${fechaFinFormateada2}&latitude-min=${latitudInferiorIzquierda}&latitude-max=${latitudSuperiorDerecha}&longitude-min=${longitudInferiorIzquierda}&longitude-max=${longitudSuperiorDerecha}&community=${formDataZone.comunidad}&parameters=${formDataZone.parametros}&format=${formDataZone.formato}&header=true&time-standard=lst`,
+        { responseType: 'blob' }
+      );
+
+
+      let extension = '.nc';
+
+      switch (formato) {
+        case 'ascii':
+          extension = '.txt';
+          break;
+        case 'csv':
+          extension = '.csv';
+          break;
+        case 'json':
+          extension = '.json';
+          break;
+
+        default:
+          break;
+      }
+
+
+      const contentDisposition = response.headers['content-disposition'];
+      const fileNameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+      const matches = fileNameRegex.exec(contentDisposition);
+      const fileName = matches && matches[1] ? matches[1] : `archivo_descargado${extension}`;
+
+      saveAs(response.data, fileName);
+      setActivarBoton(false);
+
+      loadingAlert.close();
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Archivo descargado exitosamente ",
+        showConfirmButton: false,
+        timer: 1500
+      });
+
+
+      console.log(response.data, "data")
+
+
+
+    } catch (error) {
+      console.error('Error al hacer la solicitud:', error);
+      console.log(error)
+      // Manejo de errores específicos
+      if (error.response && error.response.data && error.response.data.messages) {
+        const messages = error.response.data.messages;
+        if (messages.includes("Please provide a maximum of 10 degree range in latitude.") ||
+          messages.includes("Please provide a maximum of 10 degree range in longitude.")) {
+          // Error de rango pequeño
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Por favor, agrande el rectángulo.',
+          });
+        } else if (messages.includes("Please provide at least a 2 degree range in latitude; otherwise use the point endpoint.") ||
+          messages.includes("Please provide at least a 2 degree range in longitude; otherwise use the point endpoint.")) {
+          // Error de rango pequeño
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Por favor, reduzca el rectángulo.',
+          });
+        } else {
+          // Otro tipo de error
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Ocurrió un error al procesar la solicitud.',
+          });
+        }
+      } else {
+        // Otro tipo de error
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Revisa los datos ingresados',
+        });
+      }
+
+
+    }
+
+
+
+
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormDataZone({
+      ...formDataZone,
+      [name]: value
+    });
+  };
 
 
   const formulario2 = () => {
 
     return (
-      <form onSubmit={(e) => { e.preventDefault(); }}>
+      <form onSubmit={handleFormSubmitZone}>
         <div>
           <h1 className="text-center text-2xl font-bold py-5">Zone</h1>
         </div>
         <div className="flex mb-4 gap-x-2">
           <label className='text-nowrap w-56 text-end'>Fecha de inicio</label>
-          <input type="date" className="rounded-lg text-center w-full font-light" />
+          <input type="date" className="rounded-lg text-center w-full font-light"
+            name='fechaInicio'
+            value={formDataZone.fechaInicio}
+            onChange={handleChange}
+
+          />
         </div>
 
         <div className="flex mb-4 gap-x-2">
           <label className='text-nowrap w-56 text-end'>Fecha de término</label>
           <input type="date"
+            name='fechaFin'
+            value={formDataZone.fechaFin}
+            onChange={handleChange}
 
             className="rounded-lg text-center w-full font-thin" />
         </div>
@@ -197,32 +339,50 @@ export default function Home() {
         <div className="flex mb-4 gap-x-2">
           <label className='text-nowrap w-56 text-end'>Latitud inferior izquierda:</label>
           <input type="text" placeholder="Ingresa latitud"
-            onChange={(e) => setLatitudInferiorIzquierda(e.target.value)}
+
+            onChange={(e) => {
+              setLatitudInferiorIzquierda(e.target.value);
+              handleChange(e);
+            }}
             value={latitudInferiorIzquierda}
+            name="latitudInferiorIzquierda"
+
             className="rounded-lg w-full text-center font-thin" />
         </div>
 
         <div className="flex mb-4 gap-x-2">
           <label className="text-nowrap w-56 text-end">Longitud inferior izquierda:</label>
           <input placeholder='Ingresa longitud' type="text"
-            onChange={(e) => setLongitudInferiorIzquierda(e.target.value)}
+            onChange={(e) => {
+              setLongitudInferiorIzquierda(e.target.value);
+              handleChange(e);
+            }}
             value={longitudInferiorIzquierda}
+            name='longitudInferiorIzquierda'
             className="rounded-lg text-center w-full font-thin" />
         </div>
 
         <div className="flex mb-4 gap-x-2">
           <label className='text-nowrap w-56 text-end'>Latitud superior derecha:</label>
           <input type="text" placeholder="Ingresa latitud"
-            onChange={(e) => setLatitudSuperiorDerecha(e.target.value)}
+            onChange={(e) => {
+              setLatitudSuperiorDerecha(e.target.value);
+              handleChange(e);
+            }}
             value={latitudSuperiorDerecha}
+            name='latitudSuperiorDerecha'
             className="rounded-lg w-full text-center font-thin" />
         </div>
 
         <div className="flex mb-4 gap-x-2">
           <label className="text-nowrap w-56 text-end">Longitud superior derecha:</label>
           <input placeholder='Ingresa longitud' type="text"
-            onChange={(e) => setLongitudSuperiorDerecha(e.target.value)}
+            onChange={(e) => {
+              setLongitudSuperiorDerecha(e.target.value);
+              handleChange(e);
+            }}
             value={longitudSuperiorDerecha}
+            name='longitudSuperiorDerecha'
             className="rounded-lg text-center w-full font-thin" />
         </div>
 
@@ -230,6 +390,9 @@ export default function Home() {
         <div className="flex mb-4 gap-x-2">
           <label className="text-nowrap w-56 text-end">Comunidad</label>
           <select className="rounded-lg text-center w-full font-thin"
+            name="comunidad"
+            value={formDataZone.comunidad}
+            onChange={handleChange}
 
           >
             <option value="" disabled selected hidden>Selecciona comunidad</option>
@@ -241,6 +404,9 @@ export default function Home() {
         <div className="flex mb-4 gap-x-2">
           <label className="text-nowrap w-56 text-end">Intervalo</label>
           <select className="rounded-lg text-center w-full font-thin"
+            name="intervalo"
+            value={formDataZone.intervalo}
+            onChange={handleChange}
 
           >
             <option value="" disabled selected hidden>Selecciona intervalo </option>
@@ -252,7 +418,9 @@ export default function Home() {
         <div className="flex mb-4 gap-x-2">
           <label className="text-nowrap w-56 text-end">Parámetros</label>
           <select className="rounded-lg text-center w-full"
-
+            name="parametros"
+            value={formDataZone.parametros}
+            onChange={handleChange}
           >
             <option value="" disabled selected hidden>Selecciona parametros</option>
             <option value="T2M,T2MDEW,TS,T2MWET">Temperatura</option>
@@ -264,6 +432,9 @@ export default function Home() {
         <div className="flex mb-4 gap-x-2">
           <label className="text-nowrap w-56 text-end">Formato</label>
           <select className="rounded-lg text-center w-full"
+            name="formato"
+            value={formDataZone.formato}
+            onChange={handleChange}
           >
             <option value="" disabled selected hidden>Selecciona formato</option>
             <option value="ascii">ASCII</option>
@@ -273,7 +444,9 @@ export default function Home() {
           </select>
         </div>
 
-        <button className="bg-blue-500 block w-full text-white px-4 py-2 rounded">
+        <button
+          type="submit"
+          className="bg-blue-500 block w-full text-white px-4 py-2 rounded">
           Enviar
         </button>
       </form>
@@ -399,14 +572,15 @@ export default function Home() {
                 formulario2()
               )}
           </div>
-          <div class="flex justify-center items-center " >
-            <a href="/graficos" class="text-blue-500 underline"> Graficar</a>
+          <div className="flex flex-col justify-center items-center">
+            <a href="/graficos" target="_blank" className="text-blue-500 underline">Graficar</a>
+            <a href="/graficoZonas" target="_blank" className="text-blue-500 underline">Graficar Zonas</a>
           </div>
         </div>
 
 
         <div className='w-full'>
-          <MapView onMapClick={handleMapClick}  onRectangle={cords}/>
+          <MapView onMapClick={handleMapClick} onRectangle={cords} />
         </div>
       </div>
 

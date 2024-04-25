@@ -4,6 +4,7 @@ import { Line } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 import Swal from 'sweetalert2';
 
+
 export default function Graficos() {
     const [file1, setFile1] = useState(null);
     const [file2, setFile2] = useState(null);
@@ -106,7 +107,10 @@ export default function Graficos() {
                         data: values,
                         fill: false,
                         borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
+                        tension: 0.1,
+                        pointRadius: 0
+                  
+
                     }
                 ]
             };

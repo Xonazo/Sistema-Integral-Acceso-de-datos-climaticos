@@ -120,7 +120,7 @@ wind/pressure
 PS,WD10M,WS10M,WS50M,WD50M
 
 
-
+https://power.larc.nasa.gov/api/temporal/${intervalo}/regional?start=${fechaInicioFormateada}&end=${fechaFinFormateada}&latitude-min=${latitudeMin}&latitude-max=${latitudeMax}&longitude-min=${longitudeMin}&longitude-man=${longitudeMan}&community=${comunidad}&parameters=${parameters}&format=${formato}&header=true&time-standard=lst
 
 
 import React, { useEffect, useRef } from "react";
