@@ -192,8 +192,25 @@ export default function Home() {
 
     const fechaInicioFormateada2 = formatearFecha(new Date(formDataZone.fechaInicio));
     const fechaFinFormateada2 = formatearFecha(new Date(formDataZone.fechaFin));
+
+
+  const diferenciaTiempo = new Date(formDataZone.fechaFin) - new Date(formDataZone.fechaInicio);
+  const diferenciaDias = diferenciaTiempo / (1000 * 3600 * 24);
+
+  if (diferenciaDias > 366) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'El período seleccionado no puede ser mayor a 366 días.',
+    });
+    return; 
+  }
+
     console.log(fechaInicioFormateada2, "fecha inicio formateada2")
     console.log(fechaFinFormateada2, "fecha fin formateada2")
+
+
+
 
     const loadingAlert = Swal.fire({
       title: 'Cargando...',
@@ -222,10 +239,6 @@ export default function Home() {
         case 'csv':
           extension = '.csv';
           break;
-        case 'json':
-          extension = '.json';
-          break;
-
         default:
           break;
       }
@@ -248,55 +261,18 @@ export default function Home() {
         timer: 1500
       });
 
-
       console.log(response.data, "data")
-
-
 
     } catch (error) {
       console.error('Error al hacer la solicitud:', error);
       console.log(error)
-      // Manejo de errores específicos
-      if (error.response && error.response.data && error.response.data.messages) {
-        const messages = error.response.data.messages;
-        if (messages.includes("Please provide a maximum of 10 degree range in latitude.") ||
-          messages.includes("Please provide a maximum of 10 degree range in longitude.")) {
-          // Error de rango pequeño
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Por favor, agrande el rectángulo.',
-          });
-        } else if (messages.includes("Please provide at least a 2 degree range in latitude; otherwise use the point endpoint.") ||
-          messages.includes("Please provide at least a 2 degree range in longitude; otherwise use the point endpoint.")) {
-          // Error de rango pequeño
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Por favor, reduzca el rectángulo.',
-          });
-        } else {
-          // Otro tipo de error
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Ocurrió un error al procesar la solicitud.',
-          });
-        }
-      } else {
-        // Otro tipo de error
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Revisa los datos ingresados',
-        });
-      }
-
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Revisa los datos ingresados',
+      });
 
     }
-
-
-
 
   };
 
@@ -410,7 +386,7 @@ export default function Home() {
 
           >
             <option value="" disabled selected hidden>Selecciona intervalo </option>
-            <option value="hourly">Por Hora</option>
+            {/* <option value="hourly">Por Hora</option> */}
             <option value="daily">Diario</option>
           </select>
         </div>
@@ -439,7 +415,6 @@ export default function Home() {
             <option value="" disabled selected hidden>Selecciona formato</option>
             <option value="ascii">ASCII</option>
             <option value="csv">CSV</option>
-            <option value="json">GeoJSON</option>
             <option value="netcdf">NetCDF</option>
           </select>
         </div>
