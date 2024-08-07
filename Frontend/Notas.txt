@@ -104,7 +104,6 @@ Name: Temperature at 10 Meters Minimum
 Abbreviation: T10M_MIN
 
 TEMPERATURA
-las que funcaron:
 T2MDEW
 T2M
 TS

@@ -11,7 +11,8 @@ from flask import Flask, request, jsonify, after_this_request
 from flask_cors import CORS  
 
 app = Flask(__name__)
-CORS(app)  
+
+CORS(app, resources={r"/upload": {"origins": "http://localhost:3000"}})
 
 # Ruta 
 @app.route('/upload', methods=['POST'])
