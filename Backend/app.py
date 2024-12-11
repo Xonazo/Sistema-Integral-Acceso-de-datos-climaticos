@@ -2,7 +2,7 @@ import io
 import xarray as xr
 
 import matplotlib
-matplotlib.use('Agg')  # Configuración del backend no interactivo
+matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import numpy as np
@@ -23,7 +23,7 @@ def upload_file():
     netcdf_file = request.files['netcdfFile']
     netcdf_data = netcdf_file.read()
 
-    # Cargar el archivo NetCDF
+
     data = xr.open_dataset(io.BytesIO(netcdf_data))
 
     variables = [var for var in data.variables if var not in ['time', 'lat', 'lon']]
@@ -33,9 +33,9 @@ def upload_file():
 
 
     for variable_seleccionada in variables:
-        variable_data = data[variable_seleccionada].isel(time=0).values  # Extraer los valores de la variable
+        variable_data = data[variable_seleccionada].isel(time=0).values  
 
-        # Verificar si la forma de los datos es al menos (2, 2)
+   
         if variable_data.shape < (2, 2):
 
             print(f"Los datos de la variable {variable_seleccionada} no tienen una forma adecuada.")
@@ -45,7 +45,7 @@ def upload_file():
         lat = data['lat']
         lon = data['lon']
 
-        fig = plt.figure(figsize=(12, 8))  # Ajustar tamaño de la figura
+        fig = plt.figure(figsize=(12, 8))  
         ax = plt.axes(projection=ccrs.PlateCarree())
 
         vmin = np.min(variable_data)
