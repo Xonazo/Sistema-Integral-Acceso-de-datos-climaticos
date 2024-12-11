@@ -12,7 +12,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/upload": {"origins": "http://localhost:3000"}})
+CORS(app)
 
 # Ruta 
 @app.route('/upload', methods=['POST'])
