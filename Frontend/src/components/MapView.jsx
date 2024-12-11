@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import "leaflet/dist/images/marker-icon.png";
 import "leaflet/dist/images/marker-shadow.png";
-import "leaflet-geosearch/dist/geosearch.css"; // Importa los estilos CSS de leaflet-geosearch
+import "leaflet-geosearch/dist/geosearch.css"; 
 
 const Map = dynamic(() => import("react-leaflet").then((mod) => mod.Map), {
   ssr: false,
@@ -137,11 +137,11 @@ const MapView = ({ onMapClick, onRectangle }) => {
     const lngDiff = Math.abs(upperRight.lng - bottomLeft.lng);
 
     if (latDiff > 10 || lngDiff > 10) {
-      setImage('bad.png'); // Actualiza la imagen a 'bad.png' si excede el máximo
+      setImage('bad.png'); 
     } else if (latDiff < 2 || lngDiff < 2) {
-      setImage('bad.png'); // Actualiza la imagen a 'bad.png' si está por debajo del mínimo
+      setImage('bad.png'); 
     } else {
-      setImage('ok.png'); // Si no está ni por debajo del mínimo ni por encima del máximo, actualiza la imagen a 'ok.png'
+      setImage('ok.png'); 
     }
 
     onRectangle(bottomLeft.lat, upperRight.lat, bottomLeft.lng, upperRight.lng);
@@ -150,7 +150,7 @@ const MapView = ({ onMapClick, onRectangle }) => {
   const handleDeleteRectangles = () => {
     if (rectangleRef.current) {
       mapRef.current.removeLayer(rectangleRef.current);
-      rectangleRef.current.transform.disable(); // Deshabilitar la transformación
+      rectangleRef.current.transform.disable(); 
       rectangleRef.current = null;
     }
     if (handleRef.current) {
@@ -158,7 +158,7 @@ const MapView = ({ onMapClick, onRectangle }) => {
       handleRef.current = null;
     }
   };
-  const [image, setImage] = useState('bad.png'); // Por defecto, muestra la imagen 'ok.png'
+  const [image, setImage] = useState('bad.png'); 
 
 
   return (
